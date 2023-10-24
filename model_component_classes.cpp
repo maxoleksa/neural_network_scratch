@@ -12,6 +12,43 @@ class Activation {
     (iii) getter functions that reference the activation function and its derivative and compute desired values
         ^^ these will be referenced in the layer class
     */
+    private:
+        double (Activation::*pActivation) (double);
+        double (Activation::*pActivationDerivative) (double);
+    // various activation functions and their derivatives
+        double sigmoid(double x) {
+            return 1/(1+exp(-x));
+        }
+        double sigmoid_prime(double x) {
+            return sigmoid(x)*(1-sigmoid(x));
+        }
+
+        double linear(double x) {
+            return x;
+        }
+        double linear_prime(double _ = 0.0) {
+            return 1;
+        }
+
+        double relu(double x) {
+            return max(0.0,x);
+        }
+        double relu_prime(double x) {
+            if (x <= 0.0) {return 0;} else {return 1;}
+        }
+    public:
+        Activation(string _activation = "sigmoid") {
+            if (_activation == "sigmoid") {pActivation=&sigmoid; pActivationDerivative=&sigmoid_prime;}
+            else if (_activation == "linear") {pActivation=&linear; pActivationDerivative=&linear_prime;}
+            else {pActivation=&relu; pActivationDerivative=&relu_prime;}
+        }
+
+        vector<double> generateOutputs (vector<double> inputs) {
+            vector<double> outputs;
+            for (int i = 0; i < size(inputs); i++) {
+                outputs.push_back(pActivation(inputs[i]));
+            }
+        }
 };
 
 class Weight {
