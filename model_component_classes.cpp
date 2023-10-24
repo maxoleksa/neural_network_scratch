@@ -116,8 +116,8 @@ class Layer { // parent class for (i) hidden layers ... (a) fully connected (b) 
             activation = Activation(_activation);
         }
 
-        vector<double> computeOutput(Activation activation, vector<double> inpts) {
-            outputs = activation.generateOutputs(inpts);
+        vector<double> computeOutput() {
+            outputs = activation.generateOutputs(inputs);
             return outputs;
         }
 
