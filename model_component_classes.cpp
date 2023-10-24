@@ -43,11 +43,12 @@ class Activation {
             else {pActivation=&relu; pActivationDerivative=&relu_prime;}
         }
 
-        vector<double> generateOutputs (vector<double> inputs) {
+        vector<double> generateOutputs (vector<double> inputs) { // "activate" the input data
             vector<double> outputs;
             for (int i = 0; i < size(inputs); i++) {
                 outputs.push_back(pActivation(inputs[i]));
             }
+            return outputs;
         }
 };
 
@@ -86,27 +87,44 @@ class Weight {
             }
         }
 
-        // back propagation will be defined, computed, and re-assigning all in model class (since it requires information from other layers/weights)
+        // back propagation 
+        // delta relies on higher layer deltas and prev_outputs relies on the previous layer ... thus values must be stored in model class and then passed to this function for model back propagation
+        void backPropagationWeights(double lr, vector<double> delta, vector<double> prev_outputs) {
+            for (int i = 0; i < size(delta); i++) {
+                for (int j = 0; j < size(prev_outputs); j++) {
+                    weights[i*size(prev_outputs) + j] -= lr*delta[i]*prev_outputs[j];
+                }
+            }
+        }
+        void backPropagationBias(double lr, vector<double> delta) {
+            for (int i = 0; i < size(delta); i++) {
+                bias[i] -= lr*delta[i];
+            }
+        }
 };
 
 class Layer { // parent class for (i) hidden layers ... (a) fully connected (b) not-fully (c) etc ... (ii) input layers (iii) output layers
     private:
+        vector<double> inputs;
+        vector<double> outputs;
     public:
         int nodes;
+        Activation activation;
+
+        Layer(int _nodes, string _activation) {
+            nodes = _nodes;
+            activation = Activation(_activation);
+        }
+
+        vector<double> computeOutput(Activation activation, vector<double> inpts) {
+            outputs = activation.generateOutputs(inpts);
+            return outputs;
+        }
 
 };
 
-class HiddenLayer : Layer { // can have children (e.g. fully-connected/dense, sparsely-connected)
-
-};
-
-class InputLayer : Layer {
-
-};
-
-class OutputLayer : Layer {
-
-};
+// a lot of functions will be stored in model class rather than components
+// e.g. batch read of data requires averaging of model outputs so function will be defined there rather than in input sub-class (since need all individual outputs and then averaging them)
 
 int main() {
     return 0;
