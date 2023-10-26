@@ -22,8 +22,36 @@ class Model {
         }
 
         // propagation functions
-        vector<double> computeDeltas(int layer_num) { // recursive 
+        // deltas for backPropagation
+        void computeDeltas() { 
+            for (int layer_num = size(layers)-1; layer_num >= 0; layer_num--){
+                vector<double> delta;
+                double tmp_val = 0;
+
+                if (layer_num == size(layers)-1){
+                    for (int i = 0; i < size(predictions); i++) {
+                        delta.insert(delta.begin(),predictions[i]-actuals[i]);
+                    }
+                } else {
+                    int prev_nodes = layers[layer_num].nodes;
+                    int next_nodes = layers[layer_num+1].nodes;
+
+                    for (int col = 0; col < prev_nodes; col++) { // transpose of weight matrix is used in calculation
+                        for (int row = 0; row < next_nodes; row++){ // so row/col are backwards in loops
+                            tmp_val += weights[layer_num+1][col*next_nodes + row] * deltas[0][row]; // effectively creating a memo recursive function since deltas is stored in class 
+                        }                                                                           // could have kept it recursive by taking 'computeDeltas[row]' outside of for loops and storing in var                                                                                      
+                        delta.push_back(tmp_val*layers[layer_num].activation.pActivationDerivative(layers[layer_num].inputs[col]));
+                        tmp_val = 0;
+                    }
+                }
+                deltas.insert(deltas.begin(),delta);
+            }
+        } 
+        // recursive computeDeltas
+        /*
+        vector<double> computeDeltas(int layer_num) { 
             vector<double> delta;
+            vector<double> next_delta; // since delta^i relies on delta^(i+1)
             double tmp_val = 0;
 
             if (layer_num == size(layers)-1){
@@ -33,11 +61,12 @@ class Model {
             } else {
                 int prev_nodes = layers[layer_num].nodes;
                 int next_nodes = layers[layer_num+1].nodes;
+                next_delta = computeDeltas(layer_num + 1);
 
                 for (int col = 0; col < prev_nodes; col++) { // transpose of weight matrix is used in calculation
                     for (int row = 0; row < next_nodes; row++){ // so row/col are backwards in loops
-                        tmp_val += weights[layer_num+1][col*next_nodes + row] * computeDeltas(layer_num+1)[row];
-                    }
+                        tmp_val += weights[layer_num+1][col*next_nodes + row] * next_delta[row]; 
+                    }                                                                                                                                                              
                     delta.push_back(tmp_val*layers[layer_num].activation.pActivationDerivative(layers[layer_num].inputs[col]));
                     tmp_val = 0;
                 }
@@ -45,7 +74,7 @@ class Model {
             deltas.insert(deltas.begin(),delta);
             return delta;
         } 
-
+        */
         void forwardPropagation() {
             vector<double> tmp_output;
             for (int i = 0; i < size(layers) - 1; i++) {
