@@ -16,6 +16,8 @@ class Model {
         double (Model::*pLoss) (vector<double>, vector<double>);
 
     // various loss functions (has a lot of room for expansion)
+    // these loss functions, and the Activation activation functions, can be moved to separate files
+    // but since only a few are included they are defined in class
         double logLoss(vector<double> preds, vector<double> acts) { // classification
             double sm = 0.0;
             for (int i = 0; i < size(preds); i++) {
@@ -48,13 +50,14 @@ class Model {
         void add(Layer _layer) {
             layers.push_back(_layer);
             if (size(layers) > 1) {
-                weights.push_back(layers[size(layers)-2],layers.back()); // .back returns [size() - 1] so 2nd to last is [size() - 2]
+                weights.push_back(Weight(layers[size(layers)-2],layers.back())); // .back returns [size() - 1] so 2nd to last is [size() - 2]
             }
         }
         // setter for loss function
         void useLoss(string _loss) {
             // classification
             if (_loss == "binary cross-entropy" || _loss == "log") {pLoss = &logLoss;} 
+            // regression
             else {pLoss = &mse;}
         }
 
@@ -77,9 +80,9 @@ class Model {
 
                     for (int col = 0; col < prev_nodes; col++) { // transpose of weight matrix is used in calculation
                         for (int row = 0; row < next_nodes; row++){ // so row/col are backwards in loops
-                            tmp_val += weights[layer_num+1][col*next_nodes + row] * deltas[0][row]; // effectively creating a memo recursive function since deltas is stored in class 
+                            tmp_val += weights[layer_num+1].weights[col * next_nodes + row] * deltas[0][row]; // effectively creating a memo recursive function since deltas is stored in class 
                         }                                                                           // could have kept it recursive by taking 'computeDeltas[row]' outside of for loops and storing in var                                                                                      
-                        delta.push_back(tmp_val*layers[layer_num].activation.pActivationDerivative(layers[layer_num].inputs[col]));
+                        delta.push_back(tmp_val*layers[layer_num].activation.activationFunctionDerivative(layers[layer_num].getInputs()[col]));
                         tmp_val = 0;
                     }
                 }
@@ -106,7 +109,7 @@ class Model {
                     for (int row = 0; row < next_nodes; row++){ // so row/col are backwards in loops
                         tmp_val += weights[layer_num+1][col*next_nodes + row] * next_delta[row]; 
                     }                                                                                                                                                              
-                    delta.push_back(tmp_val*layers[layer_num].activation.pActivationDerivative(layers[layer_num].inputs[col]));
+                    delta.push_back(tmp_val*layers[layer_num].activation.pActivationDerivative(layers[layer_num].getInputs()[col]));
                     tmp_val = 0;
                 }
             }
@@ -114,22 +117,26 @@ class Model {
             return delta;
         } 
         */
+        double calculateLoss(vector<double> preds, vector<double> acts) {
+            return (*this.*pLoss)(preds,acts);
+        }
+
         double predict(vector<double> input) { // forward propagation
             vector<double> tmp_output;
-            layers[0].inputs = input;
+            layers[0].getInputs() = input;
             for (int i = 0; i < size(layers) - 1; i++) {
                 tmp_output = layers[i].computeOutput();
-                layers[i+1].inputs = weights[i].computeInput(tmp_output);
+                layers[i+1].getInputs() = weights[i].computeInput(tmp_output);
             }
             predictions = layers[size(layers)-1].computeOutput();
 
-            return pLoss(predictions,actuals);
+            return calculateLoss(predictions,actuals);
         }
 
         void backPropagation(double learning_rate) {
             computeDeltas();
             for (int i = 0; i < size(weights); i++) {
-                weights[i].backPropagationWeights(learning_rate, deltas[i], layers[i]);
+                weights[i].backPropagationWeights(learning_rate, deltas[i], layers[i].getOutputs());
                 weights[i].backPropagationBias(learning_rate, deltas[i]);
             }
         }

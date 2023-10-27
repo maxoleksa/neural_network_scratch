@@ -2,17 +2,11 @@
 #include <cmath>
 #include <vector>
 
-#include "model_components.h"
+#include "model_component_classes.h"
 
 using namespace std;
 
 class Activation { 
-    /*
-    (i) function definitions for multiple activation functions and their derivatives
-    (ii) setter functions, used in the constructor, that set the desires activation function as the actual activation function
-    (iii) getter functions that reference the activation function and its derivative and compute desired values
-        ^^ these will be referenced in the layer class
-    */
     private:
         double (Activation::*pActivation) (double);
         double (Activation::*pActivationDerivative) (double);
@@ -55,11 +49,11 @@ class Activation {
             pActivationDerivative=&sigmoid_prime;
         }
 
-        Activation(string _activation = "sigmoid") {
+        Activation(string _activation) {
             if (_activation == "sigmoid") {pActivation=&sigmoid; pActivationDerivative=&sigmoid_prime;}
             else if (_activation == "linear") {pActivation=&linear; pActivationDerivative=&linear_prime;}
             else if (_activation == "relu") {pActivation=&relu; pActivationDerivative=&relu_prime;} 
-            else {pActivation=&hyper_tan; pActivationDerivative=&hyper_tan_prime}
+            else {pActivation=&hyper_tan; pActivationDerivative=&hyper_tan_prime;}
         }
 
         void operator=(const Activation &a) {
@@ -67,13 +61,21 @@ class Activation {
             pActivationDerivative = a.pActivationDerivative;
         }
 
+        double activationFunction(double x) {
+            return (*this.*pActivation)(x);
+        }
+        double activationFunctionDerivative(double x) {
+            return (*this.*pActivationDerivative)(x);
+        }
+
         vector<double> generateOutputs (vector<double> inputs) { // "activate" the input data
             vector<double> outputs;
             for (int i = 0; i < size(inputs); i++) {
-                outputs.push_back(pActivation(inputs[i]));
+                outputs.push_back(activationFunction(inputs[i]));
             }
             return outputs;
         }
+
 };
 
 class Weight {
@@ -165,7 +167,7 @@ class Layer { // parent class for (i) hidden layers ... (a) fully connected (b) 
 
         Layer() {
             nodes = 3;
-            activation = Activation()
+            activation = Activation();
         }
 
         Layer(int _nodes, string _activation) {
@@ -185,6 +187,9 @@ class Layer { // parent class for (i) hidden layers ... (a) fully connected (b) 
             return outputs;
         }
 
+        // getter functions for inputs and outputs
+        vector<double> getInputs() {return inputs;}
+        vector<double> getOutputs() {return outputs;}
 };
 
 // a lot of functions will be stored in model class rather than components

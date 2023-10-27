@@ -1,8 +1,8 @@
 #include <iostream> 
 #include <vector>
 
-#include "model.h"
-#include "model_components.h"
+#include "model_class.h"
+#include "model_component_classes.h"
 
 using namespace std;
 
@@ -13,7 +13,7 @@ int main() {
     int num_features = 2;
 
     // build model
-    model = Model();
+    Model model = Model();
     model.add(Layer(num_features,"hyper_tan")); // input
     model.add(Layer(3,"hyper_tan")); // hidden
     model.add(Layer(1,"hyper_tan")); // output
@@ -22,7 +22,7 @@ int main() {
     model.useLoss("log");
 
     // test
-    model.fit(x_train,y_train,10,.1,num_features);
+    model.fit(x_train,y_train,100,.1,num_features);
     model.predict(x_train);
 
     // evaluate
