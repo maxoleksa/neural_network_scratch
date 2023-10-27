@@ -2,7 +2,7 @@
 #include <cmath>
 #include <vector>
 
-#include "model_class.h"
+//#include "model_class.h"
 #include "model_component_classes.h"
 
 using namespace std;
@@ -123,10 +123,10 @@ class Model {
 
         double predict(vector<double> input) { // forward propagation
             vector<double> tmp_output;
-            layers[0].getInputs() = input;
+            layers[0].setInputs(input);
             for (int i = 0; i < size(layers) - 1; i++) {
                 tmp_output = layers[i].computeOutput();
-                layers[i+1].getInputs() = weights[i].computeInput(tmp_output);
+                layers[i+1].setInputs( weights[i].computeInput(tmp_output) );
             }
             predictions = layers[size(layers)-1].computeOutput();
 
@@ -162,3 +162,5 @@ class Model {
 
 };
 
+
+int main() {return 0;}

@@ -2,7 +2,7 @@
 #include <cmath>
 #include <vector>
 
-#include "model_component_classes.h"
+//#include "model_component_classes.h"
 
 using namespace std;
 
@@ -108,14 +108,15 @@ class Layer { // parent class for (i) hidden layers ... (a) fully connected (b) 
             activation = l.activation;
         }
 
+        // getter functions for inputs and outputs
+        void setInputs(vector<double> _inputs) {inputs = _inputs;}
+        vector<double> getInputs(){return inputs;}
+        vector<double> getOutputs() {return outputs;}
+
         vector<double> computeOutput() {
             outputs = activation.generateOutputs(inputs);
-            return outputs;
+            return getOutputs();
         }
-
-        // getter functions for inputs and outputs
-        vector<double> getInputs() {return inputs;}
-        vector<double> getOutputs() {return outputs;}
 };
 
 class Weight {
@@ -162,7 +163,7 @@ class Weight {
 
         // forward propagation
         vector<double> computeInput(vector<double> output) { // output is generated in the Layer class through the activation function ... output = activation(input)
-            vector<double> output;
+            vector<double> input;
             
             for (int row = 0; row < next_layer.nodes; row++) {
                 double tmp = 0;
@@ -171,9 +172,11 @@ class Weight {
                     tmp += weights[row*prev_layer.nodes + col] * output[col] + bias[col];
                 }
 
-                output.push_back(tmp);
+                input.push_back(tmp);
                 tmp = 0;
             }
+
+            return input;
         }
 
         // back propagation 
@@ -195,3 +198,5 @@ class Weight {
 
 // a lot of functions will be stored in model class rather than components
 // e.g. batch read of data requires averaging of model outputs so function will be defined there rather than in input sub-class (since need all individual outputs and then averaging them)
+
+int main() {return 0;}

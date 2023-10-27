@@ -13,7 +13,7 @@ int main() {
     int num_features = 2;
 
     // build model
-    Model model = Model();
+    Model model;
     model.add(Layer(num_features,"hyper_tan")); // input
     model.add(Layer(3,"hyper_tan")); // hidden
     model.add(Layer(1,"hyper_tan")); // output
