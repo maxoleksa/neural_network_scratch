@@ -1,6 +1,9 @@
 #include <iostream> 
 #include <vector>
 
+#include "model.h"
+#include "model_components.h"
+
 using namespace std;
 
 int main() {
@@ -17,11 +20,16 @@ int main() {
 
     // compile model
     model.useLoss("log");
-    model.fit(x_train,y_train,10,.1,num_features);
 
     // test
+    model.fit(x_train,y_train,10,.1,num_features);
     model.predict(x_train);
-    cout << model.predictions;
+
+    // evaluate
+    cout << "Predictions\tActuals" << endl;
+    for (int i = 0; i < size(x_train)/num_features; i++) {
+        cout << model.predictions[i] << "\t" << y_train[i] << endl;
+    }
 
     return 0;
 }

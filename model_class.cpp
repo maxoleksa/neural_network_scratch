@@ -2,6 +2,9 @@
 #include <cmath>
 #include <vector>
 
+#include "model_class.h"
+#include "model_component_classes.h"
+
 using namespace std;
 
 class Model {
@@ -37,6 +40,22 @@ class Model {
 
         Model() {
             // constructor is blank since anything that we would define here we prefer to define through functions
+        }
+
+        // functions for building the model
+
+        // adding layers
+        void add(Layer _layer) {
+            layers.push_back(_layer);
+            if (size(layers) > 1) {
+                weights.push_back(layers[size(layers)-2],layers.back()); // .back returns [size() - 1] so 2nd to last is [size() - 2]
+            }
+        }
+        // setter for loss function
+        void useLoss(string _loss) {
+            // classification
+            if (_loss == "binary cross-entropy" || _loss == "log") {pLoss = &logLoss;} 
+            else {pLoss = &mse;}
         }
 
         // propagation functions
@@ -134,23 +153,5 @@ class Model {
             }
         }
 
-        // functions for building the model
-
-        // adding layers
-        void add(Layer _layer) {
-            layers.push_back(_layer);
-            if (size(layers) > 1) {
-                weights.push_back(layers[size(layer)-2],layers.back()); // .back returns [size() - 1] so 2nd to last is [size() - 2]
-            }
-        }
-        // setter for loss function
-        void useLoss(string _loss) {
-            // classification
-            if (_loss == "binary cross-entropy" || _loss == "log") {pLoss = &logLoss;} 
-            else {pLoss = &mse;}
-        }
 };
 
-int main() {
-    return 0;
-}
