@@ -78,6 +78,46 @@ class Activation {
 
 };
 
+class Layer { // parent class for (i) hidden layers ... (a) fully connected (b) not-fully (c) etc ... (ii) input layers (iii) output layers
+    private:                                            // (b) has not been implemented
+        vector<double> inputs;
+        vector<double> outputs;
+    public:
+        int nodes;
+        Activation activation;
+
+        Layer(Layer &l) {
+            nodes = l.nodes;
+            l.activation = l.activation;
+        }
+
+        Layer() {
+            nodes = 3;
+            activation = Activation();
+        }
+
+        Layer(int _nodes, string _activation) {
+            nodes = _nodes;
+            activation = Activation(_activation);
+        }
+
+        void operator=(const Layer &l) {
+            inputs = l.inputs;
+            outputs = l.outputs;
+            nodes = l.nodes;
+            activation = l.activation;
+        }
+
+        vector<double> computeOutput() {
+            outputs = activation.generateOutputs(inputs);
+            return outputs;
+        }
+
+        // getter functions for inputs and outputs
+        vector<double> getInputs() {return inputs;}
+        vector<double> getOutputs() {return outputs;}
+};
+
 class Weight {
     private:
     public:
@@ -152,45 +192,6 @@ class Weight {
         }
 };
 
-class Layer { // parent class for (i) hidden layers ... (a) fully connected (b) not-fully (c) etc ... (ii) input layers (iii) output layers
-    private:                                            // (b) has not been implemented
-        vector<double> inputs;
-        vector<double> outputs;
-    public:
-        int nodes;
-        Activation activation;
-
-        Layer(Layer &l) {
-            nodes = l.nodes;
-            l.activation = l.activation;
-        }
-
-        Layer() {
-            nodes = 3;
-            activation = Activation();
-        }
-
-        Layer(int _nodes, string _activation) {
-            nodes = _nodes;
-            activation = Activation(_activation);
-        }
-
-        void operator=(const Layer &l) {
-            inputs = l.inputs;
-            outputs = l.outputs;
-            nodes = l.nodes;
-            activation = l.activation;
-        }
-
-        vector<double> computeOutput() {
-            outputs = activation.generateOutputs(inputs);
-            return outputs;
-        }
-
-        // getter functions for inputs and outputs
-        vector<double> getInputs() {return inputs;}
-        vector<double> getOutputs() {return outputs;}
-};
 
 // a lot of functions will be stored in model class rather than components
 // e.g. batch read of data requires averaging of model outputs so function will be defined there rather than in input sub-class (since need all individual outputs and then averaging them)
