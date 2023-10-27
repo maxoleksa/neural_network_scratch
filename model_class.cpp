@@ -9,21 +9,41 @@ class Model {
         vector<Layer> layers; // e.g.   input       hidden      hidden      output
         vector<Weight> weights; // e.g.         W0          W1          W2
         vector<vector<double>> deltas; // ive been avoiding this but each delta is a different size so useful here
+        int num_features;
+        double (Model::*pLoss) (vector<double>, vector<double>);
+
+    // various loss functions (has a lot of room for expansion)
+        double logLoss(vector<double> preds, vector<double> acts) { // classification
+            double sm = 0.0;
+            for (int i = 0; i < size(preds); i++) {
+                sm += acts[i]*log(preds[i]);
+            }
+            return -1/size(preds)*sm;
+        }
+        double mse(vector<double> preds, vector<double> acts) { // regression
+            double sm = 0.0;
+            for (int i = 0; i < size(preds); i++) {
+                sm += pow(preds[i] - acts[i],2);
+            }
+            return 1/size(preds)*sm;
+        }
     public:
         vector<double> predictions; // want to allow for multiple output nodes so not declaring single-type
         vector<double> actuals;
-        vector<double> input_data; 
+        vector<double> input_data;
         double learning_rate;
+        double loss;
         // Layer object has an Activation object as an attribute, so no need for activations vector
 
-        Model(double _lr) {
-            // not quite sure what the constructor needs to look like yet
-            learning_rate = _lr;
+        Model() {
+            // constructor is blank since anything that we would define here we prefer to define through functions
         }
 
         // propagation functions
+
         // deltas for backPropagation
         void computeDeltas() { 
+            deltas = {{}};
             for (int layer_num = size(layers)-1; layer_num >= 0; layer_num--){
                 vector<double> delta;
                 double tmp_val = 0;
@@ -75,20 +95,59 @@ class Model {
             return delta;
         } 
         */
-        void forwardPropagation() {
+        double predict(vector<double> input) { // forward propagation
             vector<double> tmp_output;
+            layers[0].inputs = input;
             for (int i = 0; i < size(layers) - 1; i++) {
                 tmp_output = layers[i].computeOutput();
                 layers[i+1].inputs = weights[i].computeInput(tmp_output);
             }
             predictions = layers[size(layers)-1].computeOutput();
+
+            return pLoss(predictions,actuals);
         }
 
-        void backPropagation() {
+        void backPropagation(double learning_rate) {
+            computeDeltas();
             for (int i = 0; i < size(weights); i++) {
                 weights[i].backPropagationWeights(learning_rate, deltas[i], layers[i]);
                 weights[i].backPropagationBias(learning_rate, deltas[i]);
             }
+        }
+
+        void fit(vector<double> x_train, vector<double> y_train, int epochs, double lr, int num_feats) {
+            input_data = x_train;
+            num_features = num_feats;
+            for (int i = 0; i < epochs; i++) {
+                double error = 0.0;
+                double avg_epoch_error;
+                for (int j = 0; j < size(x_train)/num_feats; j++) {
+                    vector<double> tmp_vec;
+                    for (int k = 0; k < num_feats; k++) {
+                        tmp_vec.push_back(x_train[j*num_feats + k]);
+                    }
+                    error += predict(tmp_vec);
+                    backPropagation(lr);
+                }
+                avg_epoch_error = error / (size(x_train)/num_feats);
+                cout << "Epoch " << i << '/' << epochs << "\tLoss = " << avg_epoch_error;
+            }
+        }
+
+        // functions for building the model
+
+        // adding layers
+        void add(Layer _layer) {
+            layers.push_back(_layer);
+            if (size(layers) > 1) {
+                weights.push_back(layers[size(layer)-2],layers.back()); // .back returns [size() - 1] so 2nd to last is [size() - 2]
+            }
+        }
+        // setter for loss function
+        void useLoss(string _loss) {
+            // classification
+            if (_loss == "binary cross-entropy" || _loss == "log") {pLoss = &logLoss;} 
+            else {pLoss = &mse;}
         }
 };
 

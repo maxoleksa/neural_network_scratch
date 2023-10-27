@@ -36,11 +36,19 @@ class Activation {
         double relu_prime(double x) {
             if (x <= 0.0) {return 0;} else {return 1;}
         }
+
+        double hyper_tan(double x) {
+            return tanh(x);
+        }
+        double hyper_tan_prime(double x) {
+            return 1 - pow(tanh(x),2);
+        }
     public:
         Activation(string _activation = "sigmoid") {
             if (_activation == "sigmoid") {pActivation=&sigmoid; pActivationDerivative=&sigmoid_prime;}
             else if (_activation == "linear") {pActivation=&linear; pActivationDerivative=&linear_prime;}
-            else {pActivation=&relu; pActivationDerivative=&relu_prime;}
+            else if (_activation == "relu") {pActivation=&relu; pActivationDerivative=&relu_prime;} 
+            else {pActivation=&hyper_tan; pActivationDerivative=&hyper_tan_prime}
         }
 
         vector<double> generateOutputs (vector<double> inputs) { // "activate" the input data
@@ -104,7 +112,7 @@ class Weight {
 };
 
 class Layer { // parent class for (i) hidden layers ... (a) fully connected (b) not-fully (c) etc ... (ii) input layers (iii) output layers
-    private:
+    private:                                            // (b) has not been implemented
         vector<double> inputs;
         vector<double> outputs;
     public:
