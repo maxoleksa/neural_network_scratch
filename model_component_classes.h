@@ -16,7 +16,7 @@ class Activation {
         double hyper_tan_prime(double x);
     public:
         Activation();
-        Activation(Activation &a);
+        //Activation(Activation &a);
 
         void operator=(const Activation &a);
         double activationFunction(double x);
@@ -33,11 +33,11 @@ class Layer {
         Activation activation;
 
         Layer();
-        Layer(Layer &l);
+        //Layer(Layer &l);
         Layer(int _nodes, std::string _activation);
 
         void operator=(const Layer &l);
-        void setInputs(vector<double> _inputs);
+        void setInputs(std::vector<double> _inputs);
         std::vector<double> getInputs();
         std::vector<double> getOutputs();
         std::vector<double> computeOutput();
@@ -52,7 +52,7 @@ class Weight {
         std::vector<double> bias;
 
         Weight();
-        Weight(Weight &w);
+        //Weight(Weight &w);
         Weight(Layer _prev, Layer _next);
 
         void operator=(const Weight &w);
