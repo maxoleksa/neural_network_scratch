@@ -2,7 +2,7 @@
 #include <cmath>
 #include <vector>
 
-//#include "model_component_classes.h"
+#include "model_component_classes.h"
 #include "model_class.h"
 
 using namespace std;
@@ -11,10 +11,17 @@ using namespace std;
 // various loss functions (has a lot of room for expansion)
 // these loss functions, and the Activation activation functions, can be moved to separate files
 // but since only a few are included they are defined in class
+double Model::binaryCrossEntropy(vector<double> preds, vector<double> acts) {
+    double sm = 0.0;
+    for (int i = 0; i < size(preds); i++) {
+        sm += acts[i]*log(max(preds[i],pow(10,-9))) + (1-acts[i])*(log(1-max(preds[i],pow(10,-9))));
+    }
+    return -1/size(preds)*sm;
+}
 double Model::logLoss(vector<double> preds, vector<double> acts) { // classification
     double sm = 0.0;
     for (int i = 0; i < size(preds); i++) {
-        sm += acts[i]*log(preds[i]);
+        sm += acts[i]*log(max(preds[i],pow(10,-9)));
     }
     return -1/size(preds)*sm;
 }
@@ -42,7 +49,8 @@ void Model::add(Layer _layer) {
 // setter for loss function
 void Model::useLoss(string _loss) {
     // classification
-    if (_loss == "binary cross-entropy" || _loss == "log") {pLoss = &logLoss;} 
+    if (_loss == "log") {pLoss = &logLoss;} 
+    else if (_loss == "binary cross-entropy") {pLoss = &binaryCrossEntropy;}
     // regression
     else {pLoss = &mse;}
 }
@@ -66,7 +74,7 @@ void Model::computeDeltas() {
 
             for (int col = 0; col < prev_nodes; col++) { // transpose of weight matrix is used in calculation
                 for (int row = 0; row < next_nodes; row++){ // so row/col are backwards in loops
-                    tmp_val += weights[layer_num+1].weights[col * next_nodes + row] * deltas[0][row]; // effectively creating a memo recursive function since deltas is stored in class 
+                    tmp_val += weights[layer_num].weights[col * next_nodes + row] * deltas[0][row]; // effectively creating a memo recursive function since deltas is stored in class 
                 }                                                                           // could have kept it recursive by taking 'computeDeltas[row]' outside of for loops and storing in var                                                                                      
                 delta.push_back(tmp_val*layers[layer_num].activation.activationFunctionDerivative(layers[layer_num].getInputs()[col]));
                 tmp_val = 0;
@@ -130,6 +138,7 @@ void Model::backPropagation(double learning_rate) {
 void Model::fit(vector<double> x_train, vector<double> y_train, int epochs, double lr, int num_feats) {
     input_data = x_train;
     num_features = num_feats;
+    actuals = y_train;
     for (int i = 0; i < epochs; i++) {
         double error = 0.0;
         double avg_epoch_error;
@@ -142,6 +151,6 @@ void Model::fit(vector<double> x_train, vector<double> y_train, int epochs, doub
             backPropagation(lr);
         }
         avg_epoch_error = error / (size(x_train)/num_feats);
-        cout << "Epoch " << i << '/' << epochs << "\tLoss = " << avg_epoch_error;
+        cout << "Epoch " << i << '/' << epochs << "\tLoss = " << avg_epoch_error << endl;
     }
 }

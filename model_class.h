@@ -12,6 +12,7 @@ class Model{
         int num_features;
 
         double (Model::*pLoss) (std::vector<double>, std::vector<double>);
+        double binaryCrossEntropy(std::vector<double> preds, std::vector<double> acts);
         double logLoss(std::vector<double> preds, std::vector<double> acts);
         double mse(std::vector<double> preds, std::vector<double> acts);
     public:
@@ -23,6 +24,7 @@ class Model{
 
         Model();
         //Model(Model &m);
+
 
         void add(Layer _layer);
         void useLoss(std::string _loss);

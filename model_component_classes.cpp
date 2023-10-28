@@ -78,6 +78,7 @@ vector<double> Activation::generateOutputs (vector<double> inputs) { // "activat
 
 // Layer class
 
+
 /* commenting %_ constructors as test for undefined reference error
 Layer(Layer &l) {
     nodes = l.nodes;
@@ -113,6 +114,7 @@ vector<double> Layer::computeOutput() {
 
 
 // Weight Class
+
 
 // constructors
 
