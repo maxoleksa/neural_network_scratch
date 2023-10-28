@@ -17,6 +17,7 @@ class Activation {
     public:
         Activation();
         //Activation(Activation &a);
+        Activation(std::string _activation);
 
         void operator=(const Activation &a);
         double activationFunction(double x);

@@ -22,6 +22,7 @@ class Model{
         double loss;
 
         Model();
+        //Model(Model &m);
 
         void add(Layer _layer);
         void useLoss(std::string _loss);
