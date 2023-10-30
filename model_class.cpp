@@ -30,7 +30,7 @@ double Model::mse(vector<double> preds, vector<double> acts) { // regression
     for (int i = 0; i < size(preds); i++) {
         sm += pow(preds[i] - acts[i],2);
     }
-    return 1/size(preds)*sm;
+    return 1.0/size(preds)*sm;
 }
 
 Model::Model() {
@@ -43,7 +43,7 @@ Model::Model() {
 void Model::add(Layer _layer) {
     layers.push_back(_layer);
     if (size(layers) > 1) {
-        weights.push_back(Weight(layers[size(layers)-2],layers.back())); // .back returns [size() - 1] so 2nd to last is [size() - 2]
+        weights.push_back(Weight(layers[size(layers)-2],layers[size(layers)-1]));
     }
 }
 // setter for loss function
@@ -59,7 +59,7 @@ void Model::useLoss(string _loss) {
 
 // deltas for backPropagation
 void Model::computeDeltas() { 
-    deltas = {{}};
+    deltas = {};
     for (int layer_num = size(layers)-1; layer_num >= 0; layer_num--){
         vector<double> delta;
         double tmp_val = 0;
@@ -112,26 +112,49 @@ vector<double> Model::computeDeltas(int layer_num) {
 } 
 */
 double Model::calculateLoss(vector<double> preds, vector<double> acts) {
-    return (*this.*pLoss)(preds,acts);
+    loss = (*this.*pLoss)(preds,acts);
+    return loss;
 }
 
-double Model::predict(vector<double> input) { // forward propagation
-    vector<double> tmp_output;
-    layers[0].setInputs(input);
-    for (int i = 0; i < size(layers) - 1; i++) {
-        tmp_output = layers[i].computeOutput();
-        layers[i+1].setInputs( weights[i].computeInput(tmp_output) );
-    }
-    predictions = layers[size(layers)-1].computeOutput();
+double Model::predict(vector<double> input, double actual) {
+    if (size(input) == num_features) { // forward prop for single data point (fitting)
+        layers[0].setInputs(input);
+        for (int i = 0; i < size(layers) - 1; i++) { 
+            layers[i+1].setInputs( weights[i].computeInput( layers[i].computeOutput() ) );
+        }
+        predictions = layers[size(layers)-1].computeOutput();
+        return calculateLoss(predictions,{actual});
 
-    return calculateLoss(predictions,actuals);
+    } else { // forward prop for final prediction (all datapoints)
+        predictions = {};
+        for (int j = 0; j < size(input)/num_features; j++) { 
+            vector<double> tmp_input;
+            vector<double> tmp_pred;
+
+            for (int k = 0; k < num_features; k++) { // get all features in datapoint
+                tmp_input.push_back(input[j*num_features + k]);
+            }
+
+            layers[0].setInputs(tmp_input); 
+            for (int i = 0; i < size(layers) - 1; i++) { 
+                layers[i+1].setInputs( weights[i].computeInput( layers[i].computeOutput() ) );
+            }    
+
+            tmp_pred = layers[size(layers)-1].computeOutput(); // add prediction to final predictions attribute
+            for (int _ = 0; _ < size(tmp_pred); _++) {
+                predictions.push_back(tmp_pred[_]);
+            }
+        }
+        loss = calculateLoss(predictions,actuals);
+        return loss;  
+    }
 }
 
 void Model::backPropagation(double learning_rate) {
     computeDeltas();
     for (int i = 0; i < size(weights); i++) {
-        weights[i].backPropagationWeights(learning_rate, deltas[i], layers[i].getOutputs());
-        weights[i].backPropagationBias(learning_rate, deltas[i]);
+        weights[i].backPropagationWeights(learning_rate, deltas[i+1], layers[i].getOutputs());
+        weights[i].backPropagationBias(learning_rate, deltas[i+1]);
     }
 }
 
@@ -147,10 +170,13 @@ void Model::fit(vector<double> x_train, vector<double> y_train, int epochs, doub
             for (int k = 0; k < num_feats; k++) {
                 tmp_vec.push_back(x_train[j*num_feats + k]);
             }
-            error += predict(tmp_vec);
+
+            error += predict(tmp_vec,actuals[j]);
             backPropagation(lr);
         }
         avg_epoch_error = error / (size(x_train)/num_feats);
-        cout << "Epoch " << i << '/' << epochs << "\tLoss = " << avg_epoch_error << endl;
+        cout << "" << endl;
+        cout << "Epoch " << i+1 << '/' << epochs << "\tLoss = " << avg_epoch_error << endl;
+        cout << "" << endl;
     }
 }

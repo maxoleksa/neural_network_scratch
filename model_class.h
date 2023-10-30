@@ -5,9 +5,7 @@
 
 class Model{
     private:
-        std::vector<Layer> layers;
-        std::vector<Weight> weights;
-        std::vector<std::vector<double>> deltas;
+        
 
         int num_features;
 
@@ -22,6 +20,10 @@ class Model{
         double learning_rate;
         double loss;
 
+        std::vector<Layer> layers;
+        std::vector<Weight> weights;
+        std::vector<std::vector<double>> deltas;
+
         Model();
         //Model(Model &m);
 
@@ -30,7 +32,7 @@ class Model{
         void useLoss(std::string _loss);
         void computeDeltas();
         double calculateLoss(std::vector<double> preds, std::vector<double> acts);
-        double predict(std::vector<double> input);
+        double predict(std::vector<double> input, double actual);
         void backPropagation(double learning_rate);
         void fit(std::vector<double> x_train, std::vector<double> y_train, int epochs, double lr, int num_feats);
 };

@@ -130,8 +130,8 @@ Weight::Weight() {
     // since default layer constructor uses 3 elements we will work under that assumption for the 
     // blank weight constructor
     for (int i = 0; i < 3; i++) {
-        weights.push_back(.1);
-        bias.push_back(.1);
+        weights.push_back( ((double) rand() + 1) / (RAND_MAX) );
+        bias.push_back( ((double) rand() + 1) / (RAND_MAX) );
     }
 }
 
@@ -140,8 +140,8 @@ Weight::Weight(Layer _prev, Layer _next) {
     next_layer = _next;
 
     for (int _ = 0; _ < prev_layer.nodes*next_layer.nodes; _++) {
-        weights.push_back(.1); // initial weight value, can randomize or make distribution rather than single value
-        if (_ < next_layer.nodes) {bias.push_back(.1);} // initial bias value 
+        weights.push_back( ((double) rand() + 1) / (RAND_MAX) ); // initial weight value, can randomize or make distribution rather than single value
+        if (_ < next_layer.nodes) {bias.push_back( ((double) rand() + 1) / (RAND_MAX) );} // initial bias value 
     }
 }
 

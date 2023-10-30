@@ -16,9 +16,9 @@ int main() {
     int num_features = 2;
     
     // making Layers and stuff vars as test of fixing "undefined ref" error
-    Layer input_layer = Layer(num_features,"binary cross-entropy");
-    Layer hidden_layer = Layer(3,"binary cross-entropy");
-    Layer output_layer = Layer(1,"binary cross-entropy");
+    Layer input_layer = Layer(num_features,"sigmoid");
+    Layer hidden_layer = Layer(3,"sigmoid");
+    Layer output_layer = Layer(1,"sigmoid");
 
     // build model
     Model model;
@@ -27,11 +27,11 @@ int main() {
     model.add(output_layer); // output
 
     // compile model
-    model.useLoss("log");
+    model.useLoss("mse");
 
     // test
-    model.fit(x_train,y_train,100,.1,num_features);
-    model.predict(x_train);
+    model.fit(x_train,y_train,1000,.1,num_features);
+    model.predict(x_train,{});
 
     // evaluate
     cout << "Predictions\tProbabilities\tActuals" << endl;
@@ -43,6 +43,8 @@ int main() {
             cout << 0 << "\t\t" << model.predictions[i] << "\t\t" << y_train[i] << endl;
         }
     }
+    cout << "" << endl;
+    cout << "Final Loss: " << model.loss << endl;
     
     return 0;
 }

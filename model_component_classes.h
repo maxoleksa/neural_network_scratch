@@ -27,11 +27,12 @@ class Activation {
 
 class Layer {
     private:
-        std::vector<double> inputs;
+        
         std::vector<double> outputs;
     public:
         int nodes;
         Activation activation;
+        std::vector<double> inputs;
 
         Layer();
         //Layer(Layer &l);
