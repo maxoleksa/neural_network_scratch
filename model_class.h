@@ -30,10 +30,10 @@ class Model{
 
         void add(Layer _layer);
         void useLoss(std::string _loss);
-        void computeDeltas();
+        void computeDeltas(double actual);
         double calculateLoss(std::vector<double> preds, std::vector<double> acts);
         double predict(std::vector<double> input, double actual);
-        void backPropagation(double learning_rate);
+        void backPropagation(double learning_rate, double actual);
         void fit(std::vector<double> x_train, std::vector<double> y_train, int epochs, double lr, int num_feats);
 };
 

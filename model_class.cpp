@@ -58,7 +58,7 @@ void Model::useLoss(string _loss) {
 // propagation functions
 
 // deltas for backPropagation
-void Model::computeDeltas() { 
+void Model::computeDeltas(double actual) { 
     deltas = {};
     for (int layer_num = size(layers)-1; layer_num >= 0; layer_num--){
         vector<double> delta;
@@ -66,7 +66,7 @@ void Model::computeDeltas() {
 
         if (layer_num == size(layers)-1){
             for (int i = 0; i < size(predictions); i++) {
-                delta.insert(delta.begin(),predictions[i]-actuals[i]);
+                delta.insert(delta.begin(),(predictions[i]-actual)*layers[layer_num].activation.activationFunctionDerivative(layers[layer_num].getInputs()[i]));
             }
         } else {
             int prev_nodes = layers[layer_num].nodes;
@@ -83,34 +83,7 @@ void Model::computeDeltas() {
         deltas.insert(deltas.begin(),delta);
     }
 } 
-// recursive computeDeltas
-/*
-vector<double> Model::computeDeltas(int layer_num) { 
-    vector<double> delta;
-    vector<double> next_delta; // since delta^i relies on delta^(i+1)
-    double tmp_val = 0;
 
-    if (layer_num == size(layers)-1){
-        for (int i = 0; i < size(predictions); i++) {
-            delta.insert(delta.begin(),predictions[i]-actuals[i]);
-        }
-    } else {
-        int prev_nodes = layers[layer_num].nodes;
-        int next_nodes = layers[layer_num+1].nodes;
-        next_delta = computeDeltas(layer_num + 1);
-
-        for (int col = 0; col < prev_nodes; col++) { // transpose of weight matrix is used in calculation
-            for (int row = 0; row < next_nodes; row++){ // so row/col are backwards in loops
-                tmp_val += weights[layer_num+1][col*next_nodes + row] * next_delta[row]; 
-            }                                                                                                                                                              
-            delta.push_back(tmp_val*layers[layer_num].activation.pActivationDerivative(layers[layer_num].getInputs()[col]));
-            tmp_val = 0;
-        }
-    }
-    deltas.insert(deltas.begin(),delta);
-    return delta;
-} 
-*/
 double Model::calculateLoss(vector<double> preds, vector<double> acts) {
     loss = (*this.*pLoss)(preds,acts);
     return loss;
@@ -138,6 +111,7 @@ double Model::predict(vector<double> input, double actual) {
             layers[0].setInputs(tmp_input); 
             for (int i = 0; i < size(layers) - 1; i++) { 
                 layers[i+1].setInputs( weights[i].computeInput( layers[i].computeOutput() ) );
+
             }    
 
             tmp_pred = layers[size(layers)-1].computeOutput(); // add prediction to final predictions attribute
@@ -145,13 +119,13 @@ double Model::predict(vector<double> input, double actual) {
                 predictions.push_back(tmp_pred[_]);
             }
         }
-        loss = calculateLoss(predictions,actuals);
-        return loss;  
+        
+        return calculateLoss(predictions,actuals);  
     }
 }
 
-void Model::backPropagation(double learning_rate) {
-    computeDeltas();
+void Model::backPropagation(double learning_rate, double actual) {
+    computeDeltas(actual);
     for (int i = 0; i < size(weights); i++) {
         weights[i].backPropagationWeights(learning_rate, deltas[i+1], layers[i].getOutputs());
         weights[i].backPropagationBias(learning_rate, deltas[i+1]);
@@ -172,7 +146,7 @@ void Model::fit(vector<double> x_train, vector<double> y_train, int epochs, doub
             }
 
             error += predict(tmp_vec,actuals[j]);
-            backPropagation(lr);
+            backPropagation(lr,actuals[j]);
         }
         avg_epoch_error = error / (size(x_train)/num_feats);
         cout << "" << endl;

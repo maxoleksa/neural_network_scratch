@@ -30,7 +30,7 @@ int main() {
     model.useLoss("mse");
 
     // test
-    model.fit(x_train,y_train,1000,.1,num_features);
+    model.fit(x_train,y_train,10000,.1,num_features);
     model.predict(x_train,{});
 
     // evaluate
