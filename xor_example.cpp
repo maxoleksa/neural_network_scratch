@@ -9,6 +9,7 @@ using namespace std;
 
 int main() {
     cout.flush();
+    srand(time(NULL));
 
     // Xor data (if x or y, but not both, is 1 then 1 else 0)
     vector<double> x_train = {0.0,0.0,0.0,1.0,1.0,0.0,1.0,1.0}; 
@@ -26,11 +27,19 @@ int main() {
     model.add(hidden_layer); // hidden
     model.add(output_layer); // output
 
+    for (int weight_num = 0; weight_num < size(model.weights); weight_num++) {
+        cout << "weight " << weight_num << endl;
+        for (int weight = 0; weight < size(model.weights[weight_num].weights); weight++) {
+            cout << model.weights[weight_num].weights[weight] << "\t";
+        }
+        cout << endl;
+    }
+
     // compile model
     model.useLoss("mse");
 
     // test
-    model.fit(x_train,y_train,10000,.1,num_features);
+    model.fit(x_train,y_train,1000,.1,num_features);
     model.predict(x_train,{});
 
     // evaluate
@@ -45,6 +54,14 @@ int main() {
     }
     cout << "" << endl;
     cout << "Final Loss: " << model.loss << endl;
+
+    for (int weight_num = 0; weight_num < size(model.weights); weight_num++) {
+        cout << "weight " << weight_num << endl;
+        for (int weight = 0; weight < size(model.weights[weight_num].weights); weight++) {
+            cout << model.weights[weight_num].weights[weight] << "\t";
+        }
+        cout << endl;
+    }
     
     return 0;
 }

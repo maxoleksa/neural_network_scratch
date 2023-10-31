@@ -139,9 +139,21 @@ Weight::Weight(Layer _prev, Layer _next) {
     prev_layer = _prev;
     next_layer = _next;
 
-    for (int _ = 0; _ < prev_layer.nodes*next_layer.nodes; _++) {
-        weights.push_back( ((double) rand() + 1) / (RAND_MAX) ); // initial weight value, can randomize or make distribution rather than single value
-        if (_ < next_layer.nodes) {bias.push_back( ((double) rand() + 1) / (RAND_MAX) );} // initial bias value 
+    for (int _ = 0; _ < prev_layer.nodes*next_layer.nodes; _++) { // want a random distribution with both
+        if (rand() % 2 == 0) {                                      // pos and neg values
+            weights.push_back( 3*(((double) rand() + 1) / (RAND_MAX)) );
+        } else {
+            weights.push_back( -3*(((double) rand() + 1) / (RAND_MAX)) );
+        }
+
+    }
+    for (int _ = 0; _ < next_layer.nodes; _++) {
+        if (rand() % 2 == 0) {
+            bias.push_back( 3*(((double) rand() + 1) / (RAND_MAX)) ); 
+        } else {
+            bias.push_back( -3*(((double) rand() + 1) / (RAND_MAX)) );
+        }
+        
     }
 }
 
@@ -160,11 +172,10 @@ vector<double> Weight::computeInput(vector<double> output) { // output is genera
         double tmp = 0;
 
         for (int col = 0; col < prev_layer.nodes; col++) {
-            tmp += weights[row*prev_layer.nodes + col] * output[col] + bias[col];
+            tmp += weights[row*prev_layer.nodes + col] * output[col];
         }
 
-        input.push_back(tmp);
-        tmp = 0;
+        input.push_back(tmp + bias[row]);
     }
 
     return input;
@@ -173,9 +184,10 @@ vector<double> Weight::computeInput(vector<double> output) { // output is genera
 // back propagation 
 // delta relies on higher layer deltas and prev_outputs relies on the previous layer ... thus values must be stored in model class and then passed to this function for model back propagation
 void Weight::backPropagationWeights(double lr, vector<double> delta, vector<double> prev_outputs) {
-    for (int i = 0; i < size(delta); i++) {
-        for (int j = 0; j < size(prev_outputs); j++) {
-            weights[i*size(prev_outputs) + j] -= lr*delta[i]*prev_outputs[j];
+    int prev_nodes = size(prev_outputs);
+    for (int i = 0; i < size(delta); i++) { // size(delta) = next_nodes
+        for (int j = 0; j < prev_nodes; j++) {
+            weights[i*prev_nodes + j] -= lr*delta[i]*prev_outputs[j];
         }
     }
 }

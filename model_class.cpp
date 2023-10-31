@@ -16,19 +16,26 @@ double Model::binaryCrossEntropy(vector<double> preds, vector<double> acts) {
     for (int i = 0; i < size(preds); i++) {
         sm += acts[i]*log(max(preds[i],pow(10,-9))) + (1-acts[i])*(log(1-max(preds[i],pow(10,-9))));
     }
-    return -1/size(preds)*sm;
+    return -1.0/size(preds)*sm;
 }
 double Model::logLoss(vector<double> preds, vector<double> acts) { // classification
     double sm = 0.0;
     for (int i = 0; i < size(preds); i++) {
         sm += acts[i]*log(max(preds[i],pow(10,-9)));
     }
-    return -1/size(preds)*sm;
+    return -1.0/size(preds)*sm;
 }
 double Model::mse(vector<double> preds, vector<double> acts) { // regression
     double sm = 0.0;
     for (int i = 0; i < size(preds); i++) {
         sm += pow(preds[i] - acts[i],2);
+    }
+    return 1.0/size(preds)*sm;
+}
+double Model::mae(vector<double> preds, vector<double> acts) {
+    double sm = 0.0;
+    for (int i = 0; i < size(preds); i++) {
+        sm += abs(preds[i] - acts[i]);
     }
     return 1.0/size(preds)*sm;
 }
@@ -52,7 +59,8 @@ void Model::useLoss(string _loss) {
     if (_loss == "log") {pLoss = &logLoss;} 
     else if (_loss == "binary cross-entropy") {pLoss = &binaryCrossEntropy;}
     // regression
-    else {pLoss = &mse;}
+    else if (_loss == "mse") {pLoss = &mse;}
+    else {pLoss = &mae;}
 }
 
 // propagation functions
@@ -60,13 +68,13 @@ void Model::useLoss(string _loss) {
 // deltas for backPropagation
 void Model::computeDeltas(double actual) { 
     deltas = {};
-    for (int layer_num = size(layers)-1; layer_num >= 0; layer_num--){
+    for (int layer_num = size(layers)-1; layer_num > 0; layer_num--){ // delta0 is never used so leave out
         vector<double> delta;
         double tmp_val = 0;
 
         if (layer_num == size(layers)-1){
             for (int i = 0; i < size(predictions); i++) {
-                delta.insert(delta.begin(),(predictions[i]-actual)*layers[layer_num].activation.activationFunctionDerivative(layers[layer_num].getInputs()[i]));
+                delta.insert(delta.begin(), predictions[i]-actual);
             }
         } else {
             int prev_nodes = layers[layer_num].nodes;
@@ -74,7 +82,7 @@ void Model::computeDeltas(double actual) {
 
             for (int col = 0; col < prev_nodes; col++) { // transpose of weight matrix is used in calculation
                 for (int row = 0; row < next_nodes; row++){ // so row/col are backwards in loops
-                    tmp_val += weights[layer_num].weights[col * next_nodes + row] * deltas[0][row]; // effectively creating a memo recursive function since deltas is stored in class 
+                    tmp_val += weights[layer_num].weights[row * prev_nodes + col] * deltas[0][row]; // effectively creating a memo recursive function since deltas is stored in class 
                 }                                                                           // could have kept it recursive by taking 'computeDeltas[row]' outside of for loops and storing in var                                                                                      
                 delta.push_back(tmp_val*layers[layer_num].activation.activationFunctionDerivative(layers[layer_num].getInputs()[col]));
                 tmp_val = 0;
@@ -98,7 +106,7 @@ double Model::predict(vector<double> input, double actual) {
         predictions = layers[size(layers)-1].computeOutput();
         return calculateLoss(predictions,{actual});
 
-    } else { // forward prop for final prediction (all datapoints)
+    } else { // forward prop for multiple datapoints (final prediction)
         predictions = {};
         for (int j = 0; j < size(input)/num_features; j++) { 
             vector<double> tmp_input;
@@ -111,7 +119,6 @@ double Model::predict(vector<double> input, double actual) {
             layers[0].setInputs(tmp_input); 
             for (int i = 0; i < size(layers) - 1; i++) { 
                 layers[i+1].setInputs( weights[i].computeInput( layers[i].computeOutput() ) );
-
             }    
 
             tmp_pred = layers[size(layers)-1].computeOutput(); // add prediction to final predictions attribute
@@ -127,8 +134,8 @@ double Model::predict(vector<double> input, double actual) {
 void Model::backPropagation(double learning_rate, double actual) {
     computeDeltas(actual);
     for (int i = 0; i < size(weights); i++) {
-        weights[i].backPropagationWeights(learning_rate, deltas[i+1], layers[i].getOutputs());
-        weights[i].backPropagationBias(learning_rate, deltas[i+1]);
+        weights[i].backPropagationWeights(learning_rate, deltas[i], layers[i].getOutputs());
+        weights[i].backPropagationBias(learning_rate, deltas[i]);
     }
 }
 
@@ -145,12 +152,12 @@ void Model::fit(vector<double> x_train, vector<double> y_train, int epochs, doub
                 tmp_vec.push_back(x_train[j*num_feats + k]);
             }
 
-            error += predict(tmp_vec,actuals[j]);
-            backPropagation(lr,actuals[j]);
+            error += predict(tmp_vec,actuals[j]); // needs to be generalized
+            backPropagation(lr,actuals[j]); // same with x_train, y_train (should be vector<vector<>> instead of 1d go allow for higher dimensional data)
         }
+
         avg_epoch_error = error / (size(x_train)/num_feats);
-        cout << "" << endl;
         cout << "Epoch " << i+1 << '/' << epochs << "\tLoss = " << avg_epoch_error << endl;
-        cout << "" << endl;
+        cout << endl;
     }
 }

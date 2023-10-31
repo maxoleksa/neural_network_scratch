@@ -13,6 +13,7 @@ class Model{
         double binaryCrossEntropy(std::vector<double> preds, std::vector<double> acts);
         double logLoss(std::vector<double> preds, std::vector<double> acts);
         double mse(std::vector<double> preds, std::vector<double> acts);
+        double mae(std::vector<double> preds, std::vector<double> acts);
     public:
         std::vector<double> predictions;
         std::vector<double> actuals;
