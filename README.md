@@ -1,2 +1,2 @@
-# neural_network_scratch
-Building a basic, generalized neural network library from scratch
+# Neural Network Library
+Building a basic, generalized neural network library from scratch (just math and basic c++)
