@@ -131,22 +131,25 @@ Weight::Weight() {
     // blank weight constructor
     for (int i = 0; i < 3; i++) {
         weights.push_back( ((double) rand() + 1) / (RAND_MAX) );
-        bias.push_back( ((double) rand() + 1) / (RAND_MAX) );
+        //bias.push_back( ((double) rand() + 1) / (RAND_MAX) );
+        bias.push_back(0.0);
     }
 }
 
-Weight::Weight(Layer _prev, Layer _next) {
+Weight::Weight(Layer _prev, Layer _next, double weight_range) {
     prev_layer = _prev;
     next_layer = _next;
 
     for (int _ = 0; _ < prev_layer.nodes*next_layer.nodes; _++) { // want a random distribution with both
         if (rand() % 2 == 0) {                                      // pos and neg values
-            weights.push_back( 3*(((double) rand() + 1) / (RAND_MAX)) );
+            weights.push_back( weight_range/2*(((double) rand() + 1) / (RAND_MAX)) );
         } else {
-            weights.push_back( -3*(((double) rand() + 1) / (RAND_MAX)) );
+            weights.push_back( -weight_range/2*(((double) rand() + 1) / (RAND_MAX)) );
         }
-
+        if (_ < next_layer.nodes) {bias.push_back(0.0);}
     }
+
+    /* random bias initialization 
     for (int _ = 0; _ < next_layer.nodes; _++) {
         if (rand() % 2 == 0) {
             bias.push_back( 3*(((double) rand() + 1) / (RAND_MAX)) ); 
@@ -155,6 +158,7 @@ Weight::Weight(Layer _prev, Layer _next) {
         }
         
     }
+    */
 }
 
 void Weight::operator=(const Weight &w) {

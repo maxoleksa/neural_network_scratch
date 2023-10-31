@@ -47,10 +47,10 @@ Model::Model() {
 // functions for building the model
 
 // adding layers
-void Model::add(Layer _layer) {
+void Model::add(Layer _layer, double weight_range) {
     layers.push_back(_layer);
     if (size(layers) > 1) {
-        weights.push_back(Weight(layers[size(layers)-2],layers[size(layers)-1]));
+        weights.push_back(Weight(layers[size(layers)-2],layers[size(layers)-1],weight_range));
     }
 }
 // setter for loss function

@@ -18,28 +18,20 @@ int main() {
     
     // making Layers and stuff vars as test of fixing "undefined ref" error
     Layer input_layer = Layer(num_features,"sigmoid");
-    Layer hidden_layer = Layer(3,"sigmoid");
+    Layer hidden_layer = Layer(4,"sigmoid");
     Layer output_layer = Layer(1,"sigmoid");
 
     // build model
     Model model;
-    model.add(input_layer); // input
-    model.add(hidden_layer); // hidden
-    model.add(output_layer); // output
-
-    for (int weight_num = 0; weight_num < size(model.weights); weight_num++) {
-        cout << "weight " << weight_num << endl;
-        for (int weight = 0; weight < size(model.weights[weight_num].weights); weight++) {
-            cout << model.weights[weight_num].weights[weight] << "\t";
-        }
-        cout << endl;
-    }
+    model.add(input_layer,3); // input
+    model.add(hidden_layer,3); // hidden
+    model.add(output_layer,3); // output
 
     // compile model
     model.useLoss("mse");
 
     // test
-    model.fit(x_train,y_train,1000,.1,num_features);
+    model.fit(x_train,y_train,20000,.1,num_features);
     model.predict(x_train,{});
 
     // evaluate
@@ -54,14 +46,7 @@ int main() {
     }
     cout << "" << endl;
     cout << "Final Loss: " << model.loss << endl;
-
-    for (int weight_num = 0; weight_num < size(model.weights); weight_num++) {
-        cout << "weight " << weight_num << endl;
-        for (int weight = 0; weight < size(model.weights[weight_num].weights); weight++) {
-            cout << model.weights[weight_num].weights[weight] << "\t";
-        }
-        cout << endl;
-    }
     
+
     return 0;
 }

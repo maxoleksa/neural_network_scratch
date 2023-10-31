@@ -55,7 +55,7 @@ class Weight {
 
         Weight();
         //Weight(Weight &w);
-        Weight(Layer _prev, Layer _next);
+        Weight(Layer _prev, Layer _next, double weight_range);
 
         void operator=(const Weight &w);
         std::vector<double> computeInput(std::vector<double> output);

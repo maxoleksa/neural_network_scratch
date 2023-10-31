@@ -29,7 +29,7 @@ class Model{
         //Model(Model &m);
 
 
-        void add(Layer _layer);
+        void add(Layer _layer, double weight_range = 2.0);
         void useLoss(std::string _loss);
         void computeDeltas(double actual);
         double calculateLoss(std::vector<double> preds, std::vector<double> acts);
